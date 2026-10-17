@@ -16,13 +16,10 @@ exit 1
 fi
 
 mkdir -p "$BACKUP_DIR"
-MAX_SIZE_MB="${LAB1_MAX_SIZE_MB:-1024}"
-MAX_SIZE_KB=$((MAX_SIZE_MB*1024))
-CURRENT_KB=$(du -sk "$LOG_DIR" | awk '{print $1}')
-USAGE=$((CURRENT_KB * 100/ MAX_SIZE_KB))
+
+USAGE=$(df -P "$LOG_DIR" | tail -n 1 | awk '{print int($5)}' | tr -d '%')
 
 echo "папка: $LOG_DIR"
-echo "размер: $((CURRENT_KB / 1024 )) МБ"
 echo "заполнено: ${USAGE} % (порог ${THRESHOLD} %)"
 
 if [ "$USAGE" -le "$THRESHOLD" ]; then
@@ -34,7 +31,6 @@ if [ "${LAB1_MAX_COMPRESSION:-0}" = "1" ]; then
 TAR_FLAG="--lzma"
 EXT="tar.xz"
 echo "сжатие lzma"
-
 else
 TAR_FLAG="-z"
 EXT="tar.gz"
@@ -57,9 +53,8 @@ echo "архивируем: $FILE_NAME"
 tar $TAR_FLAG -cf "$ARCHIVE_NAME" -C "$LOG_DIR" "$FILE_NAME"
 rm -f "$OLDEST"
 
-CURRENT_KB=$(du -sk "$LOG_DIR" | awk '{print $1}')
-USAGE=$(( CURRENT_KB * 100 / MAX_SIZE_KB ))
+USAGE=$(df -P "$LOG_DIR" | tail -n 1 | awk '{print int($5)}' | tr -d '%')
 
 done
 
-echo "новый размер: $(( CURRENT_KB / 1024 )) МБ (${USAGE}%)"
+echo "новый процент: ${USAGE} %"
