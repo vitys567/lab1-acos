@@ -19,6 +19,7 @@ echo "создание виртуального диска 1 ГБ..."
 dd if=/dev/zero of="$DISK_IMG" bs=1M count=1024 status=none
 mkfs.ext4 -q -F "$DISK_IMG"
 sudo mount -o loop "$DISK_IMG" "$TEST_DIR"
+sudo chown -R $USER:$USER "$TEST_DIR"
 }
 
 echo "ТЕСТ 1: превышение порога"
